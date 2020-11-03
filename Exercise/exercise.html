@@ -1,16 +1,19 @@
+
 <!DOCTYPE html>
-<html style="height: 100%">
+<html style="height: 130%">
 <head>
     <meta charset="utf-8">
     <script src="echarts.min.js"></script>
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <title>
-        echart
+        Echart Tree
+
     </title>
 </head>
 <body style="height: 100%; margin: 0">
-<div id="container" style="height: 100%"></div>
+<div id="container" style="height: 80%"></div>
 <script type="text/javascript">
+
     let data=[
         {"parentColumn": "",  "childColumn":"A"},
         {"parentColumn": "A", "childColumn":"B"},
@@ -21,37 +24,42 @@
         {"parentColumn": "C", "childColumn":"G","val":40},
         {"parentColumn": "C", "childColumn":"H","val":60}
     ]
-    let  stratify_function= d3.stratify()
-        .id(function(d){return d["childColumn"]})
-        .parentId(function(d){return d["parentColumn"]})
-    let data_formatted= stratify_function(data)
 
-    let data_hierarchy= d3.hierarchy(data_formatted)
-    data_hierarchy.sum(function(d){
-        return d.data.val;
-    })
-    let packLayout = d3.pack()
-        .size([500, 500]);
-    // ******************************
-    // step 3.2  make d3.pack() object
-    packLayout(data_hierarchy);
-    let dom = document.getElementById("container"); // select container
+    let stratify_function = d3.stratify()
+        .id(a => a["childColumn"])
+        .parentId(a => a["parentColumn"])
+
+    let data_formatted = stratify_function(data)
+
+    function convert(j) {
+        if (j.children === undefined) {
+            return {"name": j.id, "value": j.data.val}
+        } else {
+            let children = []
+            for (let i in j.children) {
+                children[i] = convert(j.children[i]);
+            }
+            return {"name": j.id, "children": children}
+        }
+    }
+    let convertedData = [convert(data_formatted)];
+    let dom = document.getElementById("container");
     let treeMap = echarts.init(dom);
-
-    treeMap.setOption({             // define type of visualization
+    treeMap.setOption(         {
         series: [
             {
-                type: 'treemap', // visualization type
-                data: data,     // data
-                label: {        // show or hide labels
+                type: 'treemap',
+                data: convertedData,
+
+                label: {
                     show: true,
                     formatter: '{b}'
+
                 },
+
             }
         ]
-    },true);
-
-
+    },true)
 
 </script>
 </body>
